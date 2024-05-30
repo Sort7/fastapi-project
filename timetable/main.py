@@ -7,7 +7,7 @@ from fastapi.responses import ORJSONResponse
 from core.config import settings
 
 from api import router as api_router
-from timetable.core.models import db_helper
+from core.models import db_helper
 
 
 @asynccontextmanager
