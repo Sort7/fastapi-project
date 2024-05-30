@@ -1,32 +1,31 @@
-from fastapi import FastAPI
-import uvicorn
+from contextlib import asynccontextmanager
 
-from api import router as api_pouter
+import uvicorn
+from fastapi import FastAPI
+from fastapi.responses import ORJSONResponse
+
 from core.config import settings
 
-
-app = FastAPI()
-app.include_router(api_pouter, prefix=settings.api.prefix)
-
-@app.get("/")
-def hello():
-    return {"massage": "hello world",}
+from api import router as api_router
+from timetable.core.models import db_helper
 
 
-@app.get("/itens")
-def list_items():
-    return ["Iens1", "Itens2"]
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # startup
+    yield
+    # shutdown
+    await db_helper.dispose()
 
 
-@app.get("/itens/{items_id}")
-def list_items(items_id: int):
-    return {"Iens":{ "id": items_id}}
+app = FastAPI(lifespan=lifespan,)
+app.include_router(api_router,)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     uvicorn.run(
-        "main:app", # Вызываем uvicorn.run (запуск сервера) указав в кавычках путь к приложению "main:app",
-        host = settings.run.host,
-        port = settings.run.port,
-        reload=True # через команду reload=True - задаем автоматический перезапуск приложения
+        "main:app",
+        host=settings.run.host,
+        port=settings.run.port,
+        reload=True,
     )

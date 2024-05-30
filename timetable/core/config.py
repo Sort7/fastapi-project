@@ -1,13 +1,16 @@
 from pydantic import BaseModel, PostgresDsn
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class RunCofig(BaseModel):
+class RunConfig(BaseModel):
     host: str = "0.0.0.0"
     port: int = 8000
 
-class ApiPrefixCofig(BaseModel):
+
+class ApiPrefix(BaseModel):
     prefix: str = "/api"
+
+
 
 class DatabaseConfig(BaseModel):
     url: PostgresDsn
@@ -17,27 +20,18 @@ class DatabaseConfig(BaseModel):
     max_overflow: int = 10
 
 
-class Settinds(BaseSettings):
-    run: RunCofig = RunCofig()
-    api: ApiPrefixCofig = ApiPrefixCofig()
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=(".env",),
+        case_sensitive=False,
+        env_nested_delimiter="__",
+        env_prefix="APP_CONFIG__",
+    )
+    run: RunConfig = RunConfig()
+    api: ApiPrefix = ApiPrefix()
     db: DatabaseConfig
-    db_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/fa"
 
 
-settings = Settinds()
+settings = Settings()
 
-# from pathlib import Path
-#
-# from sqlalchemy import create_engine
-#
-#
-# BASE_DIR = Path(__file__).parent
-# db_file_path = BASE_DIR / "blog.db"
-# # DB_URL = f"sqlate:///db_file_path"
-# DB_URL = "postgresql+pg8000://user:example@localhost:5432/blog"
-# DB_ECHO = True
-#
-# engine = create_engine(
-#     url = DB_URL,
-#     echo = DB_ECHO
-# )
+
