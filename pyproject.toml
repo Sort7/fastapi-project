@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "timetable"
+version = "0.1.0"
+description = "Skvortcov Aleksei"
+authors = ["Skvortcov Aleksei"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = {extras = ["all"], version = "^0.111.0"}
+uvicorn = {extras = ["standard"], version = "^0.30.0"}
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.30"}
+pydantic = {extras = ["email"], version = "^2.7.2"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
