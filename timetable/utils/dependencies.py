@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.models import db_helper, User, UserProfale, TrenerProfale
 from crud.profile import get_profile
+from crud.timetable import get_timetable
 from crud.trenet import get_trener
 from crud.users import get_user
 
@@ -49,4 +50,18 @@ async def trener_by_id(
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Trener {trener_id} not found!",
+    )
+
+
+async def timetable_by_id(
+    timetable_id: Annotated[int, Path],
+    session: AsyncSession = Depends(db_helper.session_getter),
+) -> TrenerProfale:
+    timetable = await get_timetable(session=session, timetable_id=timetable_id)
+    if timetable is not None:
+        return timetable
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Trener {timetable_id} not found!",
     )

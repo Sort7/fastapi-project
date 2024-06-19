@@ -9,6 +9,7 @@ from core.config import settings
 from api.users import router as api_router
 from api.profile import router as profile_router
 from api.trener import router as trener_router
+from api.timetable import router as timetable_router
 from authentication.auth import router as auth_router
 from core.models import db_helper
 
@@ -26,6 +27,9 @@ main_app.include_router(api_router,)
 main_app.include_router(auth_router,)
 main_app.include_router(profile_router,)
 main_app.include_router(trener_router,)
+main_app.include_router(timetable_router,)
+
+
 
 if __name__ == "__main__":
     uvicorn.run(
