@@ -6,20 +6,14 @@ from pydantic import ConfigDict
 # from core.models.user import RolesProfile
 
 
-class PostBase(BaseModel):
-    username: str
 
-class UserBase_1(BaseModel):
-    id: int
+
+class UserBase(BaseModel):
     phone: str
     email: EmailStr
     hashed_password: str
 
-
 class UserCreate(UserBase):
-    pass
-
-class UserCreate_1(UserBase_1):
     pass
 
 
@@ -29,19 +23,31 @@ class UserRead(UserBase):
     # )
 
     id: int
-
-class UserRead_1(UserBase_1):
-    # model_config = ConfigDict(
-    #     from_attributes=True,
-    # )
-
-    id: int
     is_superuser: bool
-    role_profile: str
+    role: str
     is_active: bool
     is_verified: bool
     created_at: datetime
     updated_at: datetime
+
+class UserUpdate(UserBase):
+    pass
+
+class UserUpdatePartial(UserUpdate):
+    phone: str | None = None
+    email: EmailStr | None = None
+    hashed_password: str | None = None
+
+
+
+
+class UserSchema(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    username: str
+    password: bytes
+    email: EmailStr | None = None
+    active: bool = True
 
 
 
