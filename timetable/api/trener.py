@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
 from core.models import db_helper, User, UserProfale, TrenerProfale
-from core.schemas.post import PostRead
 from core.schemas.profile import ProfileUserRead, ProfileAndUser, ProfileUserUpdatePartial, ProfileUserUpdate
 from core.schemas.trener import ProfileTrenerRead, ProfileTrenerUpdatePartial, ProfileTrenerUpdate
 from core.schemas.user import UserRead, UserCreate, UserUpdate, UserUpdatePartial
@@ -24,10 +23,12 @@ async def get_trener(
         ],
         trener_id: int
 ):
-    trener_profile = await trener_crud.get_trener(session=session, trener_id=trener_id)
+    try:
+        trener_profile = await trener_crud.get_trener(session=session, trener_id=trener_id)
 
-    return trener_profile
-
+        return trener_profile
+    except Exception:
+        return {"status": "error", "details": "Trener profile request error"}
 
 
 
@@ -47,20 +48,22 @@ async def create_profile_trener(
     specialization: str | None = None,
     biography: str | None = None,
 ):
-    profile_trener = await trener_crud.create_trener_profile(
-        session=session,
-        user_id=user_id,
-        name=name,
-        surname=surname,
-        birthday=birthday,
-        coaching_experience=coaching_experience,
-        sports_experience=sports_experience,
-        specialization=specialization,
-        biography=biography,
-    )
-    return profile_trener
-#
+    try:
+        profile_trener = await trener_crud.create_trener_profile(
+            session=session,
+            user_id=user_id,
+            name=name,
+            surname=surname,
+            birthday=birthday,
+            coaching_experience=coaching_experience,
+            sports_experience=sports_experience,
+            specialization=specialization,
+            biography=biography,
+        )
+        return profile_trener
 
+    except Exception:
+        return {"status": "error", "details": "Error when creating a trener profile"}
 
 
 @router.get("/treners")
@@ -70,8 +73,11 @@ async def get_treners(
         Depends(db_helper.session_getter),
     ],
 ):
-    treners = await trener_crud.show_treners_with_profiles(session=session)
-    return treners
+    try:
+        treners = await trener_crud.show_treners_with_profiles(session=session)
+        return treners
+    except Exception:
+        return {"status": "error", "details": "Аn error occurred when forming a list of trener profiles"}
 
 @router.get("/trener/{user_id}/profile")
 async def get_trener_and_profile(
@@ -80,9 +86,12 @@ async def get_trener_and_profile(
         ],
         user_id: int
 ):
-    trener = await trener_crud.show_trener_and_profile(session=session, user_id=user_id)
+    try:
+        trener = await trener_crud.show_trener_and_profile(session=session, user_id=user_id)
 
-    return trener
+        return trener
+    except Exception:
+        return {"status": "error", "details": "Аn error occurred when forming a list of profiles users"}
 
 
 @router.put("/trener/{trener_id}/update")
@@ -91,11 +100,14 @@ async def update_user_profile_put(
     trener_profile: Annotated[TrenerProfale, Depends(trener_by_id)],
     trener_profile_update: ProfileTrenerUpdate,
     ):
-    return await trener_crud.update_trener_profile(
-        session=session,
-        trener_profile=trener_profile,
-        trener_profile_update=trener_profile_update,
-    )
+    try:
+        return await trener_crud.update_trener_profile(
+            session=session,
+            trener_profile=trener_profile,
+            trener_profile_update=trener_profile_update,
+        )
+    except Exception:
+        return {"status": "error", "details": "Error updating the trener profile by the method - put"}
 
 
 @router.patch("/trener/{profile_id}/update")
@@ -104,10 +116,13 @@ async def update_user_partial(
     trener_profile: Annotated[TrenerProfale, Depends(trener_by_id)],
     trener_profile_update: ProfileTrenerUpdatePartial,
 ):
-    return await trener_crud.update_trener_profile(
-        session=session,
-        trener_profile=trener_profile,
-        trener_profile_update=trener_profile_update,
-        partial=True,
-    )
+    try:
+        return await trener_crud.update_trener_profile(
+            session=session,
+            trener_profile=trener_profile,
+            trener_profile_update=trener_profile_update,
+            partial=True,
+        )
+    except Exception:
+        return {"status": "error", "details": "Error updating the trener profile by the method - patch"}
 

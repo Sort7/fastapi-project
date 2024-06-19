@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.models import User, Post, Timetable
 from core.schemas.timetable import TimetableCreate
 from core.schemas.user import UserCreate, UserUpdate, UserUpdatePartial, UserRead
-from core.schemas.post import PostCreate
+
 
 async def get_all_timetable(
     session: AsyncSession,

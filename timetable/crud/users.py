@@ -5,20 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.models import User, Post
 from core.schemas.user import UserCreate, UserUpdate, UserUpdatePartial, UserRead
-from core.schemas.post import PostCreate
+
 
 async def get_all_users(
     session: AsyncSession,
 ) -> list[User]:
     stmt = select(User).order_by(User.id)
-    result = await session.scalars(stmt)
-    return result.all()
-
-
-async def get_all_post(
-    session: AsyncSession,
-) -> list[Post]:
-    stmt = select(Post).order_by(Post.id)
     result = await session.scalars(stmt)
     return result.all()
 
@@ -38,20 +30,9 @@ async def create_user(
     return user
 
 
-async def create_post(
-    session: AsyncSession,
-    user_create: PostCreate,
-) -> Post:
-    post = Post(**user_create.model_dump())
-    session.add(post)
-    await session.commit()
-    await session.refresh(post)
-    return post
-
-
 async def update_user(
     session: AsyncSession,
-    user: UserRead,
+    user: User,
     user_update: UserUpdate | UserUpdatePartial,
     partial: bool = False,
 ) -> User:
