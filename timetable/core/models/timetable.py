@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import date
 
 from sqlalchemy import UniqueConstraint, Integer, String, ForeignKey, Boolean, func, Date, Float
 from sqlalchemy.orm import Mapped, relationship
@@ -12,7 +13,7 @@ from core.models import Base, User
 class Timetable(Base):
     __tablename__ = "timetables"
 
-    data: Mapped[Date] = mapped_column(
+    date: Mapped[date] = mapped_column(
         Date, nullable=False
     )
     time: Mapped[str] = mapped_column(

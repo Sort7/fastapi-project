@@ -1,4 +1,5 @@
 from typing import Sequence
+from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,6 +9,10 @@ from core.schemas.timetable import TimetableCreate
 from core.schemas.user import UserCreate, UserUpdate, UserUpdatePartial, UserRead
 
 
+async def get_timetable(session: AsyncSession, timetable_id: int) -> Timetable | None:
+    return await session.get(Timetable, timetable_id)
+
+
 async def get_all_timetable(
     session: AsyncSession,
 ) -> list[Timetable]:
@@ -15,9 +20,6 @@ async def get_all_timetable(
     result = await session.scalars(stmt)
     return result.all()
 
-
-async def get_timetable(session: AsyncSession, timetable_id: int) -> Timetable | None:
-    return await session.get(Timetable, timetable_id)
 
 
 async def create_timetable(
@@ -37,3 +39,4 @@ async def delete_timetable(
 ) -> None:
     await session.delete(timetable)
     await session.commit()
+

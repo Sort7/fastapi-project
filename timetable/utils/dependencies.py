@@ -1,6 +1,8 @@
 from typing import Annotated
+from datetime import date
 
 from fastapi import Path, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -65,3 +67,14 @@ async def timetable_by_id(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Timetable {timetable_id} not found!",
     )
+
+
+# async def time_in_timetable_bu_date(session: AsyncSession, date: date):
+#     stmt = (select(Timetable.time).filter(Timetable.data == date).order_by(Timetable.time))
+#     # result: Result = await session.execute(stmt)
+#     # users = result.scalars()
+#     list_time = await session.scalars(stmt)
+#     return list_time.all()
+#     # for user in users:
+#     #     print(user)
+#     #     print(user.profile.first_name)

@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import settings
 
@@ -29,6 +30,21 @@ main_app.include_router(profile_router,)
 main_app.include_router(trener_router,)
 main_app.include_router(timetable_router,)
 
+
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+
+main_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS", "DELETE", "PATCH", "PUT"],
+    allow_headers=["Content-Type", "Set-Cookie", "Access-Control-Allow-Headers", "Access-Control-Allow-Origin",
+                   "Authorization"]
+)
 
 
 if __name__ == "__main__":
