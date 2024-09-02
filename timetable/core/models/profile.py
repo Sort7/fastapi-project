@@ -1,7 +1,7 @@
 from typing import Optional
 from datetime import date
 
-from sqlalchemy import UniqueConstraint, Integer, String, ForeignKey, Boolean, func, Date, Float,Text
+from sqlalchemy import UniqueConstraint, Integer, String, ForeignKey, Boolean, func, Date, Float, Text
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 
@@ -24,7 +24,6 @@ class UserProfale(Base):
         ForeignKey("users.id", ondelete="CASCADE"), nullable=True, unique=False
     )
     user: Mapped["User"] = relationship(back_populates="user_profale")
-    user_records: Mapped[list["Timetable"]] = relationship(back_populates="user_profale")
 
 
 class TrenerProfale(Base):
@@ -55,7 +54,7 @@ class TrenerProfale(Base):
         String, nullable=True
     )
     biography: Mapped[str | None] = mapped_column(
-        Text, default="",  server_default=""
+        Text, default="", server_default=""
     )
     user: Mapped["User"] = relationship(back_populates="trener_profale")
     trener_records: Mapped[list["Timetable"]] = relationship(back_populates="trener_profale")

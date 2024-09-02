@@ -1,29 +1,27 @@
 from typing import Optional
-from datetime import date
+from datetime import date, time, datetime
 
-from sqlalchemy import UniqueConstraint, Integer, String, ForeignKey, Boolean, func, Date, Float
+from sqlalchemy import UniqueConstraint, Integer, String, ForeignKey, Boolean, func, Date, Float, Time, DateTime
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 
 from core.models import Base, User
 
 
-
-
 class Timetable(Base):
     __tablename__ = "timetables"
 
-    date: Mapped[date] = mapped_column(
+    recording_date: Mapped[date] = mapped_column(
         Date, nullable=False
     )
-    time: Mapped[str] = mapped_column(
+    recording_time: Mapped[str] = mapped_column(
         String, nullable=False
     )
-    user_profales_id: Mapped[int | None] = mapped_column(
-        ForeignKey("user_profales.id", ondelete="CASCADE"), nullable=True
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     trener_profales_id: Mapped[int | None] = mapped_column(
-        ForeignKey("trener_profales.id", ondelete="CASCADE"), nullable=True
+        ForeignKey("trener_profales.id", ondelete="CASCADE"), nullable=False
     )
-    user_profale: Mapped["UserProfale"] = relationship(back_populates="user_records")
+    user: Mapped["User"] = relationship(back_populates="user_records")
     trener_profale: Mapped["TrenerProfale"] = relationship(back_populates="trener_records")

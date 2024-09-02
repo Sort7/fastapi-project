@@ -5,7 +5,6 @@ __all__ = (
     "UserProfale",
     "TrenerProfale",
     "Timetable",
-    "Post",
 )
 
 from .db_helper import db_helper
@@ -14,4 +13,3 @@ from .user import User
 from .profile import UserProfale
 from .profile import TrenerProfale
 from .timetable import Timetable
-from .post import Post

@@ -1,128 +1,129 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter,Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi_cache.decorator import cache
 
+from authentication.auth import http_bearer
 from core.config import settings
 from core.models import db_helper, User, UserProfale, TrenerProfale
 from core.schemas.profile import ProfileUserRead, ProfileAndUser, ProfileUserUpdatePartial, ProfileUserUpdate
-from core.schemas.trener import ProfileTrenerRead, ProfileTrenerUpdatePartial, ProfileTrenerUpdate
+from core.schemas.trener import (
+    ProfileTrenerRead, ProfileTrenerUpdatePartial, ProfileTrenerUpdate, ProfaleTrener,
+    TrenerAndUser)
 from core.schemas.user import UserRead, UserCreate, UserUpdate, UserUpdatePartial
 from crud import trenet as trener_crud
+from utils.check import check_admin
 from utils.dependencies import trener_by_id
+from utils.validate_token import get_current_token_payload
 
-router = APIRouter(tags=["Treners"], prefix=settings.api.prefix,)
-
-
-
-@router.get("/trener/{trener_id}/", response_model=ProfileTrenerRead)
-async def get_trener(
-        session:  Annotated[
-            AsyncSession, Depends(db_helper.session_getter),
-        ],
-        trener_id: int
-):
-    try:
-        trener_profile = await trener_crud.get_trener(session=session, trener_id=trener_id)
-
-        return trener_profile
-    except Exception:
-        return {"status": "error", "details": "Trener profile request error"}
+router = APIRouter(tags=["Treners"], prefix=settings.api.prefix, dependencies=[Depends(http_bearer)])
 
 
-
-
-@router.post("/trener/{user_id}/profile", response_model=ProfileTrenerRead)
+@router.post("/trener/{user_id}/create", response_model=ProfileTrenerRead)
 async def create_profile_trener(
-    session: Annotated[
-        AsyncSession,
-        Depends(db_helper.session_getter),
-    ],
-    user_id: int,
-    name: str,
-    surname: str,
-    birthday: date | None = None,
-    coaching_experience: float | None = None,
-    sports_experience: float | None = None,
-    specialization: str | None = None,
-    biography: str | None = None,
+        session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
+        payload: Annotated[dict, Depends(get_current_token_payload)],
+        create_trener_profile: ProfaleTrener,
+        user_id: int,
 ):
-    try:
+    if check_admin(payload, role="admin") or (check_admin(payload, role="trener") and user_id == payload.get("sub")):
         profile_trener = await trener_crud.create_trener_profile(
             session=session,
             user_id=user_id,
-            name=name,
-            surname=surname,
-            birthday=birthday,
-            coaching_experience=coaching_experience,
-            sports_experience=sports_experience,
-            specialization=specialization,
-            biography=biography,
+            create_trener_profile=create_trener_profile,
         )
         return profile_trener
 
-    except Exception:
-        return {"status": "error", "details": "Error when creating a trener profile"}
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail=f"insufficient permissions to perform the operation",
+    )
 
 
-@router.get("/treners")
-async def get_treners(
-    session: Annotated[
-        AsyncSession,
-        Depends(db_helper.session_getter),
-    ],
+@router.get("/trener/{trener_id}/", response_model=ProfileTrenerRead)
+@cache(expire=30)
+async def get_trener(
+        session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
+        trener_id: int
 ):
-    try:
-        treners = await trener_crud.show_treners_with_profiles(session=session)
-        return treners
-    except Exception:
-        return {"status": "error", "details": "Аn error occurred when forming a list of trener profiles"}
+    trener_profile = await trener_crud.get_trener(session=session, trener_id=trener_id)
+    return trener_profile
+
 
 @router.get("/trener/{user_id}/profile")
 async def get_trener_and_profile(
-        session:  Annotated[
-            AsyncSession, Depends(db_helper.session_getter),
-        ],
+        session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
+        payload: Annotated[dict, Depends(get_current_token_payload)],
         user_id: int
 ):
-    try:
-        trener = await trener_crud.show_trener_and_profile(session=session, user_id=user_id)
-
-        return trener
-    except Exception:
-        return {"status": "error", "details": "Аn error occurred when forming a list of profiles users"}
+    trener = await trener_crud.show_trener_and_profile(session=session, user_id=user_id)
+    return trener
 
 
-@router.put("/trener/{trener_id}/update")
+@router.get("/treners")
+@cache(expire=30)
+async def get_treners(
+        session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
+        payload: Annotated[dict, Depends(get_current_token_payload)],
+):
+    treners = await trener_crud.show_treners_with_profiles(session=session)
+    return treners
+
+
+@router.put("/trener/{trener_id}/update", response_model=ProfileTrenerRead)
 async def update_user_profile_put(
-    session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
-    trener_profile: Annotated[TrenerProfale, Depends(trener_by_id)],
-    trener_profile_update: ProfileTrenerUpdate,
-    ):
-    try:
+        session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
+        payload: Annotated[dict, Depends(get_current_token_payload)],
+        trener_profile: Annotated[TrenerProfale, Depends(trener_by_id)],
+        trener_profile_update: ProfileTrenerUpdate,
+):
+    if check_admin(payload, role="admin") or trener_profile.__dict__.get("user_id") == payload.get("sub"):
         return await trener_crud.update_trener_profile(
             session=session,
             trener_profile=trener_profile,
             trener_profile_update=trener_profile_update,
         )
-    except Exception:
-        return {"status": "error", "details": "Error updating the trener profile by the method - put"}
+
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail=f"insufficient permissions to perform the operation",
+    )
 
 
-@router.patch("/trener/{profile_id}/update")
+@router.patch("/trener/{profile_id}/update", response_model=ProfileTrenerRead)
 async def update_user_partial(
-    session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
-    trener_profile: Annotated[TrenerProfale, Depends(trener_by_id)],
-    trener_profile_update: ProfileTrenerUpdatePartial,
+        session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
+        payload: Annotated[dict, Depends(get_current_token_payload)],
+        trener_profile: Annotated[TrenerProfale, Depends(trener_by_id)],
+        trener_profile_update: ProfileTrenerUpdatePartial,
+
 ):
-    try:
+    if check_admin(payload, role="admin") or trener_profile.__dict__.get("user_id") == payload.get("sub"):
         return await trener_crud.update_trener_profile(
             session=session,
             trener_profile=trener_profile,
             trener_profile_update=trener_profile_update,
             partial=True,
         )
-    except Exception:
-        return {"status": "error", "details": "Error updating the trener profile by the method - patch"}
 
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail=f"insufficient permissions to perform the operation",
+    )
+
+
+@router.delete("/trener/{profile_id}/delete", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_trener_profile(
+        session: Annotated[AsyncSession, Depends(db_helper.session_getter)],
+        payload: Annotated[dict, Depends(get_current_token_payload)],
+        trener_profile: Annotated[TrenerProfale, Depends(trener_by_id)],
+) -> None:
+    if check_admin(payload, role="admin") or trener_profile.__dict__.get("user_id") == payload.get("sub"):
+        await trener_crud.delete_trener_profile(session=session, trener_profile=trener_profile)
+
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail=f"insufficient permissions to perform the operation",
+    )

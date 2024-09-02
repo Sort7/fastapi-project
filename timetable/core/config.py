@@ -1,11 +1,14 @@
+import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 from pydantic import BaseModel, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 
 BASE_DIR = Path(__file__).parent.parent
+load_dotenv()
 
 class RunConfig(BaseModel):
     host: str = "0.0.0.0"
@@ -17,7 +20,7 @@ class ApiPrefix(BaseModel):
     prefix1: str = "/jwt"
 
 class DatabaseConfig(BaseModel):
-    url: PostgresDsn
+    url: str = os.environ.get("DB_URL")
     echo: bool = False
     echo_pool: bool = False
     pool_size: int = 50
@@ -31,24 +34,36 @@ class DatabaseConfig(BaseModel):
         "pk": "pk_%(table_name)s",
     }
 
+
+class DatabaseTestConfig(BaseModel):
+    url: str = os.environ.get("DB_TEST_URL")
+    echo: bool = False
+    echo_pool: bool = False
+
+
+
+class SMTPConfig(BaseModel):
+    host: str = os.environ.get("SMTP_HOST")
+    port: str = os.environ.get("SMTP_PORT")
+    user: str = os.environ.get("SMTP_USER")
+    password: str = os.environ.get("SMTP_PASSWORD")
+
+
 class AuthenticationJWT(BaseModel):
     private_key_path: Path = BASE_DIR / "keys_jwt" / "private.pem"
     public_key_path: Path = BASE_DIR / "keys_jwt" / "public.pem"
     algorithm: str = "RS256"
     access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 30
     # access_token_expire_minutes: int = 3
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=(".env",),
-        case_sensitive=False,
-        env_nested_delimiter="__",
-        env_prefix="APP_CONFIG__",
-    )
     run: RunConfig = RunConfig()
     api: ApiPrefix = ApiPrefix()
-    db: DatabaseConfig
+    db: DatabaseConfig = DatabaseConfig()
+    db_test: DatabaseTestConfig = DatabaseTestConfig()
     auth_jwt: AuthenticationJWT = AuthenticationJWT()
+    smtp: SMTPConfig = SMTPConfig()
 
 
 settings = Settings()

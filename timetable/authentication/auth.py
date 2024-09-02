@@ -9,7 +9,7 @@ from fastapi import (
 from fastapi.security import (
     HTTPBearer,
     # HTTPAuthorizationCredentials,
-    OAuth2PasswordBearer,
+    OAuth2PasswordBearer, HTTPAuthorizationCredentials,
 )
 from pydantic import BaseModel
 
@@ -19,9 +19,9 @@ from core.schemas.user import UserSchema
 
 
 http_bearer = HTTPBearer()
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/jwt/login/",
-)
+# oauth2_scheme = OAuth2PasswordBearer(
+#     tokenUrl="/jwt/login/",
+# )
 
 class TokenInfo(BaseModel):
     access_token: str
@@ -72,10 +72,10 @@ def validate_auth_user(
     return user
 
 def get_current_token_payload(
-    # credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
+    # token: str = Depends(oauth2_scheme),
 ) -> dict:
-    # token = credentials.credentials
+    token = credentials.credentials
     try:
         payload = decode_jwt(
             token=token,
@@ -110,33 +110,3 @@ def get_current_active_auth_user(
     )
 
 
-# функция после входа пользователя выпускает джейсон веб-токен, который будет храниться / передаваться в заголовках
-@router.post("/login/", response_model=TokenInfo)
-def auth_user_issue_jwt(
-    user: UserSchema = Depends(validate_auth_user),
-):
-    jwt_payload = {
-        # subject
-        "sub": user.username,
-        "username": user.username,
-        "email": user.email,
-        # "logged_in_at"
-    }
-    token = encode_jwt(jwt_payload)
-    return TokenInfo(
-        access_token=token,
-        token_type="Bearer",
-    )
-
-
-@router.get("/users/me/")
-def auth_user_check_self_info(
-    payload: dict = Depends(get_current_token_payload),
-    user: UserSchema = Depends(get_current_active_auth_user),
-):
-    iat = payload.get("iat")
-    return {
-        "username": user.username,
-        "email": user.email,
-        "logged_in_at": iat,
-    }

@@ -1,5 +1,4 @@
 from typing import Annotated
-from datetime import date
 
 from fastapi import Path, Depends, HTTPException, status
 from sqlalchemy import select
@@ -11,13 +10,28 @@ from crud.profile import get_profile
 from crud.timetable import get_timetable
 from crud.trenet import get_trener
 from crud.users import get_user
-
+from utils.validate_token import get_current_token_payload
 
 
 async def user_by_id(
     user_id: Annotated[int, Path],
     session: AsyncSession = Depends(db_helper.session_getter),
 ) -> User:
+    user = await get_user(session=session, user_id=user_id)
+    if user is not None:
+        return user
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"User {user_id} not found!",
+    )
+
+async def user_by_payload(
+    payload: Annotated[dict, Depends(get_current_token_payload)],
+    session: AsyncSession = Depends(db_helper.session_getter),
+
+) -> User:
+    user_id = payload.get("sub")
     user = await get_user(session=session, user_id=user_id)
     if user is not None:
         return user
@@ -54,7 +68,6 @@ async def trener_by_id(
         detail=f"Trener {trener_id} not found!",
     )
 
-
 async def timetable_by_id(
     timetable_id: Annotated[int, Path],
     session: AsyncSession = Depends(db_helper.session_getter),
@@ -68,13 +81,3 @@ async def timetable_by_id(
         detail=f"Timetable {timetable_id} not found!",
     )
 
-
-# async def time_in_timetable_bu_date(session: AsyncSession, date: date):
-#     stmt = (select(Timetable.time).filter(Timetable.data == date).order_by(Timetable.time))
-#     # result: Result = await session.execute(stmt)
-#     # users = result.scalars()
-#     list_time = await session.scalars(stmt)
-#     return list_time.all()
-#     # for user in users:
-#     #     print(user)
-#     #     print(user.profile.first_name)

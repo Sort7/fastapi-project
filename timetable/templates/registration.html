@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block head %}
+
+{% endblock %}
+
+
+
+{% block content %}
+    <h2>Регистрация пользователя</h2>
+    <form action="/api/create" method="post">
+        <p>
+            Телефон:<br>
+            <input name="phone" />
+        </p>
+        <p>
+            E-mail:<br>
+            <input name="email" />
+        </p>
+        <p>
+            Пароль:<br>
+            <input name="hashed_password" />
+        </p>
+        <input type="submit" value="Отправить" />
+    </form>
+{% endblock %}
