@@ -6,11 +6,7 @@ from fastapi import (
     HTTPException,
     status,
 )
-from fastapi.security import (
-    HTTPBearer,
-    # HTTPAuthorizationCredentials,
-    OAuth2PasswordBearer, HTTPAuthorizationCredentials,
-)
+from fastapi.security import HTTPBearer, OAuth2PasswordBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 
 from authentication.utils import hash_password, encode_jwt, validate_password, decode_jwt
@@ -28,7 +24,7 @@ class TokenInfo(BaseModel):
     token_type: str
 
 
-# router = APIRouter(prefix="/jwt", tags=["JWT"])
+
 router = APIRouter(tags=["JWT"], prefix=settings.api.prefix1,)
 
 john = UserSchema(
@@ -73,7 +69,6 @@ def validate_auth_user(
 
 def get_current_token_payload(
     credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
-    # token: str = Depends(oauth2_scheme),
 ) -> dict:
     token = credentials.credentials
     try:
@@ -84,7 +79,6 @@ def get_current_token_payload(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"invalid token error: {e}",
-            # detail=f"invalid token error",
         )
     return payload
 

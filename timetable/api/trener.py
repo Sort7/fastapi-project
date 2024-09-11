@@ -7,12 +7,9 @@ from fastapi_cache.decorator import cache
 
 from authentication.auth import http_bearer
 from core.config import settings
-from core.models import db_helper, User, UserProfale, TrenerProfale
-from core.schemas.profile import ProfileUserRead, ProfileAndUser, ProfileUserUpdatePartial, ProfileUserUpdate
+from core.models import db_helper, TrenerProfale
 from core.schemas.trener import (
-    ProfileTrenerRead, ProfileTrenerUpdatePartial, ProfileTrenerUpdate, ProfaleTrener,
-    TrenerAndUser)
-from core.schemas.user import UserRead, UserCreate, UserUpdate, UserUpdatePartial
+    ProfileTrenerRead, ProfileTrenerUpdatePartial, ProfileTrenerUpdate, ProfaleTrener)
 from crud import trenet as trener_crud
 from utils.check import check_admin
 from utils.dependencies import trener_by_id

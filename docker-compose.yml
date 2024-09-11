@@ -2,23 +2,23 @@ version: '3'
 
 services:
 
-#  app:
-#    container_name: project_fastapi_app
-#    build:
-#          context: /timetable
-#    restart: no
-#    ports:
-#      - "8000:8000"
-#    volumes:
-#      - .:/code
-#    depends_on:
-#      - db
-#    environment:
-#      - PYTHONPATH=/timetable
-#    command:
-#      - bash -c 'while !</def/tcp/postgres/5432; do sleep 1; done; uvicorn timetable/main:main_app --host 0.0.0.0 port 8000'
-#    env_file:
-#      - timetable/.env
+  app:
+    container_name: project_fastapi_app
+    build:
+          context: /timetable
+    restart: no
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+    environment:
+      - PYTHONPATH=/timetable
+    command:
+      - bash -c 'while !</def/tcp/postgres/5432; do sleep 1; done; uvicorn timetable/main:main_app --host 0.0.0.0 port 8000'
+    env_file:
+      - timetable/.env
 
 
   db:

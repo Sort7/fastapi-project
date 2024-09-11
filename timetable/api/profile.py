@@ -6,13 +6,12 @@ from fastapi_cache.decorator import cache
 
 from authentication.utils import http_bearer
 from core.config import settings
-from core.models import db_helper, User, UserProfale
-from core.schemas.profile import ProfileUserRead, ProfileAndUser, ProfileUserUpdatePartial, ProfileUserUpdate, \
+from core.models import db_helper, UserProfale
+from core.schemas.profile import ProfileUserRead, ProfileUserUpdatePartial, ProfileUserUpdate, \
     ProfileUserCreate
 from crud import profile as profile_crud
-from crud.users import update_user
 from utils.check import check_admin
-from utils.dependencies import user_by_id, user_profile_by_id
+from utils.dependencies import user_profile_by_id
 from utils.validate_token import get_current_token_payload
 
 router = APIRouter(tags=["Profales"], prefix=settings.api.prefix, dependencies=[Depends(http_bearer)])

@@ -37,7 +37,6 @@ async def get_user(
         )
 
 
-
 @router.get("/users", response_model=list[UserRead] | dict)
 @cache(expire=30)
 async def get_users(

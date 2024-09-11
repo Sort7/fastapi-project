@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
 
-
 import bcrypt
 import jwt
 from jwt.exceptions import InvalidTokenError
@@ -9,7 +8,6 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, HTTPBearer
 
 from core.config import settings
-
 
 # >>> private_key = b"-----BEGIN PRIVATE KEY-----\nMIGEAgEAMBAGByqGSM49AgEGBS..."
 # >>> public_key = b"-----BEGIN PUBLIC KEY-----\nMHYwEAYHKoZIzj0CAQYFK4EEAC..."
@@ -20,19 +18,17 @@ oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/login/",
 )
 
-#  функция отвечающая за хеширование пароля, можно заменить одной строкой:
-# hash_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+
+#  функция отвечающая за хеширование пароля
 def hash_password(
         password: str,
 ) -> str:  # -> bytes:
     salt = bcrypt.gensalt()  # генерируем "соль"
-    pwd_bytes: str = password.encode()  # переменная лишняя можно не срздавая ее происать соответсвующее значение в следующей строке
-
+    pwd_bytes: str = password.encode()
     return bcrypt.hashpw(pwd_bytes, salt)
 
 
-#  функция отвечающая за проверку захешированного пароля, можно заменить одной строкой:
-# validate_password = bcrypt.checkpw(password.encode(), hash_password)
+#  функция отвечающая за проверку захешированного пароля
 def validate_password(
         password: str,
         hashed_password: bytes,
@@ -44,7 +40,6 @@ def validate_password(
 
 
 #  функция передающая данные для создания jwt токена
-# encoded = jwt.encode({"some": "plyload"}, private_key, algorithm="RS256")
 def encode_jwt(
         payload: dict,
         # user_id,
@@ -77,7 +72,6 @@ def encode_jwt(
 
 
 #  функция отвечающая за декодирование jwt токена
-#  decoded = jwt.dencode(encoded, public_key, algorithms=["RS256"])
 def decode_jwt(
         token: str | bytes,
         public_key: str = settings.auth_jwt.public_key_path.read_text(),
@@ -91,14 +85,9 @@ def decode_jwt(
     return decoded
 
 
-
-
-
 def get_current_user(
-    # credentials: HTTPAuthorizationCredentials = Depends(http_bearer),
-    token: str = Depends(oauth2_scheme),
+        token: str = Depends(oauth2_scheme),
 ) -> dict:
-    # token = credentials.credentials
     try:
         payload = decode_jwt(
             token=token,
@@ -107,29 +96,5 @@ def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"invalid token error: {e}",
-            # detail=f"invalid token error",
         )
     return payload
-
-#
-# def get_current_auth_user(
-#     payload: dict = Depends(get_current_token_payload),
-# ) -> UserSchema:
-#     username: str | None = payload.get("sub")
-#     if user := users_db.get(username):
-#         return user
-#     raise HTTPException(
-#         status_code=status.HTTP_401_UNAUTHORIZED,
-#         detail="token invalid (user not found)",
-#     )
-#
-#
-# def get_current_active_auth_user(
-#     user: UserSchema = Depends(get_current_auth_user),
-# ):
-#     if user.active:
-#         return user
-#     raise HTTPException(
-#         status_code=status.HTTP_403_FORBIDDEN,
-#         detail="user inactive",
-#     )
